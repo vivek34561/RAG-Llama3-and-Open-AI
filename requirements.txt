@@ -12,3 +12,4 @@ faiss-cpu
 PyPDF2
 python-docx
 pypdf
+docx2txt

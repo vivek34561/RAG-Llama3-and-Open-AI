@@ -3,6 +3,8 @@ import os
 import shutil # this is code to delete the folder
 import requests
 import hashlib
+from io import BytesIO
+from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
 from bs4 import BeautifulSoup
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain_groq import ChatGroq
@@ -136,17 +138,35 @@ uploaded_files = st.sidebar.file_uploader(
 
 
 # Save uploaded files
+
+
+st.session_state.uploaded_docs = []
+
 if uploaded_files:
     for uploaded_file in uploaded_files:
         file_ext = uploaded_file.name.split('.')[-1].lower()
-        if file_ext in allowed_types:
-            save_path = os.path.join(UPLOAD_FOLDER, uploaded_file.name)
-            with open(save_path, "wb") as f:
-                f.write(uploaded_file.getbuffer())
-            st.sidebar.success(f"Uploaded: {uploaded_file.name}")
+        save_path = os.path.join(UPLOAD_FOLDER, uploaded_file.name)
+        with open(save_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+
+        if file_ext == "pdf":
+            loader = PyPDFLoader(save_path)
+        elif file_ext == "txt":
+            loader = TextLoader(save_path)
+        elif file_ext == "docx":
+            loader = Docx2txtLoader(save_path)
         else:
             st.warning(f"Unsupported file type: {uploaded_file.name}")
-            
+            continue
+
+        try:
+            docs = loader.load()
+            st.session_state.uploaded_docs.extend(docs)
+            st.sidebar.success(f"Loaded: {uploaded_file.name}")
+        except Exception as e:
+            st.sidebar.error(f"Failed to load {uploaded_file.name}: {str(e)}")
+
+          
 user_prompt=st.text_input("Enter your query from the uploaded documents")
 
 col1, col2 = st.columns([1, 1])
@@ -168,7 +188,7 @@ with col2:
         # Reset session variables
         for key in ["vectors", "embeddings", "loader", "docs", "text_splitter", "final_documents"]:
             st.session_state.pop(key, None)
-        
+        st.rerun()
         # Refresh the app
         
 st.sidebar.title("🌐 Add Web Content")
