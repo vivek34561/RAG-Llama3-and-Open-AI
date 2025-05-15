@@ -124,6 +124,20 @@ __pypackages__/
 celerybeat-schedule
 celerybeat.pid
 
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Environment and dependency files
+.env
+.env.*
+
+rag_venv/
+*.pyc
+__pycache__/
+
+
 # SageMath parsed files
 *.sage.py
 
