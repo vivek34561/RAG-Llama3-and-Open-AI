@@ -34,24 +34,33 @@ if model_choice == "Groq (LLaMA3)":
     user_groq_key = st.sidebar.text_input("🔑 Enter your GROQ API Key", type="password")
     temperature = st.sidebar.slider("Temperature", 0.0, 1.0, 0.7, 0.1)
     max_tokens = st.sidebar.slider("Max Tokens", 100, 2048, 512, 50)
-    
-    llm = ChatGroq(
-        groq_api_key=user_groq_key,
-        model_name="Llama3-8b-8192",
-        temperature=temperature,
-        max_tokens=max_tokens
-    )
+
+    if user_groq_key:
+        llm = ChatGroq(
+            groq_api_key=user_groq_key,
+            model_name="Llama3-8b-8192",
+            temperature=temperature,
+            max_tokens=max_tokens
+        )
+    else:
+        st.error("Please enter a valid GROQ API Key to continue.")
+        st.stop()
+
 else:
     user_openai_key = st.sidebar.text_input("🔑 Enter your OpenAI API Key", type="password")
     temperature = st.sidebar.slider("Temperature", 0.0, 1.0, 0.7, 0.1)
     max_tokens = st.sidebar.slider("Max Tokens", 100, 2048, 512, 50)
     
-    llm = ChatOpenAI(
+    if user_openai_key:
+      llm = ChatOpenAI(
         openai_api_key=user_openai_key,
         model_name="gpt-4o-mini",
         temperature=temperature,
         max_tokens=max_tokens
     )
+    else:
+      st.error("Please enter a valid OpenAI API Key to continue.")
+      st.stop()
 
 
 
