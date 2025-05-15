@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import shutil # this is code to delete the folder
 import requests
+import hashlib
 from bs4 import BeautifulSoup
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain_groq import ChatGroq
@@ -67,33 +68,44 @@ prompt=ChatPromptTemplate.from_template(
 
 )
 
+
+
+def hash_file(file_path):
+    with open(file_path, 'rb') as f:
+        return hashlib.md5(f.read()).hexdigest()
+
 def create_vector_embedding():
-    if "vectors" not in st.session_state:
-        st.session_state.embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-        st.session_state.loader = PyPDFDirectoryLoader("uploaded_documents")  # Load all files in folder
+    current_files = sorted(os.listdir("uploaded_documents"))
+    file_hashes = [hash_file(os.path.join("uploaded_documents", file)) for file in current_files]
 
-        # Load documents
-        st.session_state.docs = st.session_state.loader.load()
-        if not st.session_state.docs:
-            st.error("No documents found or failed to load. Please upload valid documents.")
-            return
+    # Create a fingerprint of current upload state
+    current_fingerprint = "_".join(file_hashes)
 
-        # Split documents
-        st.session_state.text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-        st.session_state.final_documents = st.session_state.text_splitter.split_documents(st.session_state.docs)
-        if not st.session_state.final_documents:
-            st.error("Document splitting failed. Ensure the documents have readable content.")
-            return
+    if "last_fingerprint" in st.session_state and st.session_state["last_fingerprint"] == current_fingerprint:
+        st.info("No new documents. Using cached embeddings.")
+        return
 
-        # Create FAISS vector store
-        try:
-            st.session_state.vectors = FAISS.from_documents(
-                st.session_state.final_documents,
-                st.session_state.embeddings
-            )
-        except Exception as e:
-            st.error(f"Embedding creation failed: {str(e)}")
-            
+    st.session_state.embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    st.session_state.loader = PyPDFDirectoryLoader("uploaded_documents")
+
+    st.session_state.docs = st.session_state.loader.load()
+    if not st.session_state.docs:
+        st.error("No documents found or failed to load.")
+        return
+
+    st.session_state.text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    st.session_state.final_documents = st.session_state.text_splitter.split_documents(st.session_state.docs)
+
+    try:
+        st.session_state.vectors = FAISS.from_documents(
+            st.session_state.final_documents,
+            st.session_state.embeddings
+        )
+        st.session_state["last_fingerprint"] = current_fingerprint
+        st.success("✅ Vector embeddings created.")
+    except Exception as e:
+        st.error(f"Embedding creation failed: {str(e)}")
+ 
             
 st.title("✨ RAG Document Q&A With Llama3 and OpenAI ✨")
 
@@ -192,7 +204,7 @@ import time
 
 if user_prompt:
     if "vectors" not in st.session_state:
-        st.warning("⚠️ Please click the '📄 Document Embedding' button before asking a question.")
+        st.warning("⚠️ Please click the '📄 Find Solution' button before asking a question.")
     else:
         document_chain = create_stuff_documents_chain(llm, prompt)
         retriever = st.session_state.vectors.as_retriever()
@@ -200,15 +212,17 @@ if user_prompt:
 
         start = time.process_time()
         response = retrieval_chain.invoke({'input': user_prompt})
-        print(f"Response time: {time.process_time() - start}")
-
         st.write(response['answer'])
 
         with st.expander("Document similarity Search"):
-            for i, doc in enumerate(response['context']):
-                st.write(doc.page_content)
-                st.write('------------------------')
+            if "context" in response:
+                for i, doc in enumerate(response['context']):
+                    st.write(doc.page_content)
+                    st.write('------------------------')
+            else:
+                st.info("No context documents were returned.")
 
+        print(f"Response time: {time.process_time() - start}")
 
 
 
