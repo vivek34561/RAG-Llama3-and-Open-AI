@@ -116,7 +116,8 @@ def create_vector_embedding():
         st.success("✅ Vector embeddings created.")
     except Exception as e:
         st.error(f"Embedding creation failed: {str(e)}")
- 
+        
+        
             
 st.title("✨ RAG Document Q&A With Llama3 and OpenAI ✨")
 
@@ -252,8 +253,3 @@ if user_prompt:
                 st.info("No context documents were returned.")
 
         print(f"Response time: {time.process_time() - start}")
-
-
-
-
-

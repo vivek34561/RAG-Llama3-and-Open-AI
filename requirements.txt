@@ -13,3 +13,4 @@ PyPDF2
 python-docx
 pypdf
 docx2txt
+streamlit_webrtc
