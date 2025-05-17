@@ -113,7 +113,7 @@ def create_vector_embedding():
             st.session_state.embeddings
         )
         st.session_state["last_fingerprint"] = current_fingerprint
-        st.success("✅ Vector embeddings created.")
+        st.success("Vector embeddings created.")
     except Exception as e:
         st.error(f"Embedding creation failed: {str(e)}")
         
@@ -193,38 +193,46 @@ with col2:
         # Refresh the app
         
 st.sidebar.title("🌐 Add Web Content")
-url_input = st.sidebar.text_input("Paste URL to fetch and embed")
 
-if st.sidebar.button("Fetch and Embed from URL"):
-    if url_input:
-        try:
-            response = requests.get(url_input, timeout=10)
-            soup = BeautifulSoup(response.text, "html.parser")
-            page_text = soup.get_text(separator=" ").strip()
+# Input: Multi-line for multiple URLs
+url_inputs = st.sidebar.text_area("Paste one or more URLs (separated by newline)")
 
-            if len(page_text) < 100:
-                st.sidebar.error("URL content is too short or unreadable.")
-            else:
-                # Split text
-                text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-                url_docs = text_splitter.create_documents([page_text])
+if st.sidebar.button("Fetch and Embed from URLs"):
+    if url_inputs:
+        urls = [u.strip() for u in url_inputs.splitlines() if u.strip()]
+        all_url_docs = []
+        failed_urls = []
 
-                # Use HuggingFace embeddings (all-MiniLM-L6-v2)
-                if "embeddings" not in st.session_state:
-                    st.session_state.embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+        for url in urls:
+            try:
+                response = requests.get(url, timeout=10)
+                soup = BeautifulSoup(response.text, "html.parser")
+                page_text = soup.get_text(separator=" ").strip()
 
-                # Vector storage
-                if "vectors" not in st.session_state:
-                    st.session_state.vectors = FAISS.from_documents(url_docs, st.session_state.embeddings)
+                if len(page_text) >= 100:
+                    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+                    all_url_docs.extend(splitter.create_documents([page_text]))
+                    st.sidebar.success(f"Embedded: {url}")
                 else:
-                    st.session_state.vectors.add_documents(url_docs)
+                    failed_urls.append(url)
 
-                st.sidebar.success("Text from URL embedded successfully!")
+            except Exception as e:
+                failed_urls.append(url)
+                st.sidebar.error(f"Failed: {url} - {str(e)}")
 
-        except Exception as e:
-            st.sidebar.error(f"Failed to fetch URL content: {str(e)}")
+        if all_url_docs:
+            if "embeddings" not in st.session_state:
+                st.session_state.embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+            if "vectors" not in st.session_state:
+                st.session_state.vectors = FAISS.from_documents(all_url_docs, st.session_state.embeddings)
+            else:
+                st.session_state.vectors.add_documents(all_url_docs)
+
+            st.sidebar.success("✅ All valid URLs embedded.")
+        if failed_urls:
+            st.sidebar.warning(f"❌ Failed to embed: {', '.join(failed_urls)}")
     else:
-        st.sidebar.warning("Please enter a valid URL.")
+        st.sidebar.warning("Please enter one or more valid URLs.")
 
         
         
