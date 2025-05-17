@@ -3,6 +3,8 @@
 This is a **Retrieval-Augmented Generation (RAG)** application built with **Streamlit** that lets you ask questions based on **uploaded documents** or **webpage content** using **LLaMA3 (via Groq)** or **OpenAI's GPT-4**.
 
 ---
+## Application link : https://rag-llama3-and-open-ai-lefydqj5baw4bevea7aq4q.streamlit.app/
+---
 
 ## 🚀 Features
 
