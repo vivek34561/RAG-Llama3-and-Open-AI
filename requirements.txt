@@ -15,5 +15,12 @@ pypdf
 docx2txt
 streamlit_webrtc
 bs4
-
-
+fastapi
+tf-keras
+langchain_huggingface
+uvicorn
+fastapi
+pydantic
+python-multipart
+requests_html
+lxml_html_clean
