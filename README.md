@@ -3,17 +3,19 @@
 This is a **Retrieval-Augmented Generation (RAG)** application built with **Streamlit** that lets you ask questions based on **uploaded documents** or **webpage content** using **LLaMA3 (via Groq)** or **OpenAI's GPT-4**.
 
 ---
+## Application link : https://rag-llama3-and-open-ai-lefydqj5baw4bevea7aq4q.streamlit.app/
+---
 
 ## 🚀 Features
 
-- 📄 Upload and embed **PDF, DOCX, or TXT** documents
-- 🌐 Fetch and embed **text from URLs**
-- 💬 Ask natural language questions about your uploaded or fetched documents
-- 🔁 Supports **LLaMA3 (Groq)** and **GPT-4 (OpenAI)**
-- 🧠 Intelligent context-aware responses using **LangChain RAG**
-- 🧠 Embedding caching to avoid recomputation
-- 🎯 Adjustable model parameters (temperature, max tokens)
-- 🧹 Clear uploads and reset chat with one click
+- 📄 Upload and embed **PDF, DOCX, or TXT** documents  
+- 🌐 Fetch and embed **text from URLs**  
+- 💬 Ask natural language questions about your uploaded or fetched documents  
+- 🔁 Supports **LLaMA3 (Groq)** and **GPT-4 (OpenAI)**  
+- 🧠 Intelligent context-aware responses using **LangChain RAG**  
+- 🧠 Embedding caching to avoid recomputation  
+- 🎯 Adjustable model parameters (temperature, max tokens)  
+- 🧹 Clear uploads and reset chat with one click  
 
 ---
 
@@ -35,7 +37,6 @@ This is a **Retrieval-Augmented Generation (RAG)** application built with **Stre
 ```bash
 git clone https://github.com/your-username/rag-document-qa.git
 cd rag-document-qa
-
 ````
 
 ### 2. Create and activate virtual environment
@@ -56,8 +57,8 @@ pip install -r requirements.txt
 Create a `.env` file in the root directory and add your API keys:
 
 ```
-OPENAI_API_KEY=your-openai-api-key
-GROQ_API_KEY=your-groq-api-key
+OPENAI_API_KEY=your-openai-api-key  
+GROQ_API_KEY=your-groq-api-key  
 ```
 
 ---
@@ -87,13 +88,27 @@ Adjust:
 ## 🗃️ File Structure
 
 ```
-├── app.py                 # Main Streamlit app
-├── requirements.txt       # Python dependencies
-├── .env                   # Your API keys
-├── uploaded_documents/    # Folder for storing uploaded files
+├── app.py                 # Main Streamlit app  
+├── requirements.txt       # Python dependencies  
+├── .env                   # Your API keys  
+├── uploaded_documents/    # Folder for storing uploaded files  
 ```
 
+📄 **[Download Full Project Structure PDF](https://chat.openai.com/mnt/data/ML_Project_Structure.pdf)**
+
 ---
+
+## 📸 Screenshots
+
+### 🧠 Streamlit App Interface
+
+
+![Screenshot-2025-05-17-134217](https://github.com/user-attachments/assets/f37721dd-6d30-43a5-b249-dc569444e251)
+
+
+![App UI] with 📂 File Upload & Sidebar Settings pdf 📁 
+[Screenshot 2025-05-17 132104.pdf](https://github.com/user-attachments/files/20263793/Screenshot.2025-05-17.132104.pdf)
+
 
 ## ⚙️ Notes
 
@@ -107,4 +122,10 @@ Adjust:
 
 MIT License. Feel free to use, modify, and share!
 
+---
 
+## 📧 Contact
+
+Maintained by Vivek Kumar Gupta . Feel free to contribute or raise an issue.
+
+For any inquiries, please reach out via email (vivekgupta3749@gmail.com) or GitHub.
