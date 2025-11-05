@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "frontend/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "https://docsense-60db96460d1e.herokuapp.com/$1" },
+    { "src": "/(.*)", "dest": "frontend/$1" }
+  ]
+}
