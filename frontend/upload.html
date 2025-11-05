@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Upload — RAG Document Q&A</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>✨ RAG Document Q&A — Upload</h1>
+    <nav class="topnav">
+      <a href="index.html">Home</a>
+      <a href="chat.html">Chat</a>
+      <a href="upload.html">Upload</a>
+      <a href="web.html">Web Content</a>
+      <a href="settings.html">Settings</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>📄 Upload Documents</h2>
+      <p>Allowed types: PDF, TXT, DOCX</p>
+      <input id="fileInput" type="file" multiple accept=".pdf,.txt,.docx" />
+      <div class="actions">
+        <button id="uploadBtn">Upload</button>
+        <button id="embedBtn">Create Embeddings ⛓️‍💥</button>
+        <button id="resetBtn" class="danger">🆕 New Chat</button>
+      </div>
+      <div id="uploadStatus" class="status"></div>
+    </section>
+  </main>
+
+  <footer>
+    <small>Built with ❤️ using FastAPI + LangChain + FAISS</small>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

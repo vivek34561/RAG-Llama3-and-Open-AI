@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chat — RAG Document Q&A</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>✨ RAG Document Q&A — Chat</h1>
+    <nav class="topnav">
+      <a href="index.html">Home</a>
+      <a href="chat.html">Chat</a>
+      <a href="upload.html">Upload</a>
+      <a href="web.html">Web Content</a>
+      <a href="settings.html">Settings</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="panel chat">
+      <h2>💬 Chat</h2>
+      <div id="messages" class="messages"></div>
+      <div class="chat-input">
+        <input id="prompt" type="text" placeholder="Ask a question about your documents" maxlength="1000" />
+        <button id="sendBtn">Send</button>
+      </div>
+      <div id="queryStatus" class="status"></div>
+      <div class="details"><small>Tip: Configure your provider and API key in Settings.</small></div>
+    </section>
+  </main>
+
+  <footer>
+    <small>Built with ❤️ using FastAPI + LangChain + FAISS</small>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 // Fixed API base pointing to your deployed Heroku backend
 const API_BASE = "https://docsense-60db96460d1e.herokuapp.com";
 
-// Elements
+// Elements (may be null depending on the page)
 const providerEl = document.getElementById('provider');
 const apiKeyEl = document.getElementById('apiKey');
 const temperatureEl = document.getElementById('temperature');
@@ -21,13 +21,46 @@ const promptEl = document.getElementById('prompt');
 const sendBtn = document.getElementById('sendBtn');
 const queryStatusEl = document.getElementById('queryStatus');
 
-// UI bindings
-temperatureEl.addEventListener('input', () => {
-  temperatureValEl.textContent = temperatureEl.value;
-});
-maxTokensEl.addEventListener('input', () => {
-  maxTokensValEl.textContent = maxTokensEl.value;
-});
+// Helpers for persisted settings
+function getSetting(key, fallback) {
+  const v = localStorage.getItem(key);
+  return v !== null ? v : fallback;
+}
+function setSetting(key, value) {
+  try { localStorage.setItem(key, String(value)); } catch (_) { /* ignore */ }
+}
+
+// Initialize settings from storage if inputs exist
+const initialProvider = getSetting('provider', 'groq');
+const initialApiKey = getSetting('apiKey', '');
+const initialTemperature = parseFloat(getSetting('temperature', '0.7'));
+const initialMaxTokens = parseInt(getSetting('maxTokens', '512'), 10);
+
+if (providerEl) {
+  providerEl.value = initialProvider;
+  providerEl.addEventListener('change', () => setSetting('provider', providerEl.value));
+}
+if (apiKeyEl) {
+  apiKeyEl.value = initialApiKey;
+  apiKeyEl.addEventListener('input', () => setSetting('apiKey', apiKeyEl.value));
+}
+if (temperatureEl) {
+  // set default from storage
+  temperatureEl.value = String(initialTemperature);
+  if (temperatureValEl) temperatureValEl.textContent = String(temperatureEl.value);
+  temperatureEl.addEventListener('input', () => {
+    if (temperatureValEl) temperatureValEl.textContent = temperatureEl.value;
+    setSetting('temperature', temperatureEl.value);
+  });
+}
+if (maxTokensEl) {
+  maxTokensEl.value = String(initialMaxTokens);
+  if (maxTokensValEl) maxTokensValEl.textContent = String(maxTokensEl.value);
+  maxTokensEl.addEventListener('input', () => {
+    if (maxTokensValEl) maxTokensValEl.textContent = maxTokensEl.value;
+    setSetting('maxTokens', maxTokensEl.value);
+  });
+}
 
 function addMessage(role, content) {
   const wrap = document.createElement('div');
@@ -40,17 +73,19 @@ function addMessage(role, content) {
   contentEl.textContent = content;
   wrap.appendChild(roleEl);
   wrap.appendChild(contentEl);
-
-  messagesEl.appendChild(wrap);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  if (messagesEl) {
+    messagesEl.appendChild(wrap);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
 }
 
 async function uploadFiles() {
-  uploadStatusEl.textContent = 'Uploading...';
+  if (uploadStatusEl) uploadStatusEl.textContent = 'Uploading...';
   try {
+    if (!fileInputEl) return;
     const files = fileInputEl.files;
     if (!files || files.length === 0) {
-      uploadStatusEl.textContent = 'Please select files to upload.';
+      if (uploadStatusEl) uploadStatusEl.textContent = 'Please select files to upload.';
       return;
     }
     const form = new FormData();
@@ -62,38 +97,39 @@ async function uploadFiles() {
     });
     const data = await resp.json();
     if (resp.ok) {
-      uploadStatusEl.textContent = `Uploaded: ${data.saved.join(', ')}`;
+      if (uploadStatusEl) uploadStatusEl.textContent = `Uploaded: ${data.saved.join(', ')}`;
     } else {
-      uploadStatusEl.textContent = `Upload failed.`;
+      if (uploadStatusEl) uploadStatusEl.textContent = `Upload failed.`;
     }
   } catch (e) {
-    uploadStatusEl.textContent = `Upload error: ${e}`;
+    if (uploadStatusEl) uploadStatusEl.textContent = `Upload error: ${e}`;
   }
 }
 
 async function createEmbeddings() {
-  uploadStatusEl.textContent = 'Creating embeddings...';
+  if (uploadStatusEl) uploadStatusEl.textContent = 'Creating embeddings...';
   try {
     const resp = await fetch(`${API_BASE}/embed`, { method: 'POST' });
     const data = await resp.json();
     if (data.status === 'ok') {
-      uploadStatusEl.textContent = `Embeddings created. Chunks: ${data.chunks}`;
+      if (uploadStatusEl) uploadStatusEl.textContent = `Embeddings created. Chunks: ${data.chunks}`;
     } else if (data.status === 'cached') {
-      uploadStatusEl.textContent = data.message;
+      if (uploadStatusEl) uploadStatusEl.textContent = data.message;
     } else {
-      uploadStatusEl.textContent = data.message || 'Embedding failed.';
+      if (uploadStatusEl) uploadStatusEl.textContent = data.message || 'Embedding failed.';
     }
   } catch (e) {
-    uploadStatusEl.textContent = `Embedding error: ${e}`;
+    if (uploadStatusEl) uploadStatusEl.textContent = `Embedding error: ${e}`;
   }
 }
 
 async function ingestUrls() {
-  urlStatusEl.textContent = 'Fetching...';
+  if (urlStatusEl) urlStatusEl.textContent = 'Fetching...';
   try {
+    if (!urlsEl) return;
     const lines = (urlsEl.value || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
     if (lines.length === 0) {
-      urlStatusEl.textContent = 'Please enter one or more valid URLs.';
+      if (urlStatusEl) urlStatusEl.textContent = 'Please enter one or more valid URLs.';
       return;
     }
     const resp = await fetch(`${API_BASE}/urls`, {
@@ -103,27 +139,28 @@ async function ingestUrls() {
     });
     const data = await resp.json();
     const failed = (data.failed || []).join(', ');
-    urlStatusEl.textContent = `Embedded: ${data.embedded}. ${failed ? 'Failed: ' + failed : ''}`;
+    if (urlStatusEl) urlStatusEl.textContent = `Embedded: ${data.embedded}. ${failed ? 'Failed: ' + failed : ''}`;
   } catch (e) {
-    urlStatusEl.textContent = `URL ingestion error: ${e}`;
+    if (urlStatusEl) urlStatusEl.textContent = `URL ingestion error: ${e}`;
   }
 }
 
 async function sendQuery() {
-  queryStatusEl.textContent = '';
+  if (queryStatusEl) queryStatusEl.textContent = '';
+  if (!promptEl) return;
   const prompt = (promptEl.value || '').trim();
   if (!prompt) return;
   if (prompt.length > 1000) {
-    queryStatusEl.textContent = 'Query too long. Please keep it under 1000 characters.';
+    if (queryStatusEl) queryStatusEl.textContent = 'Query too long. Please keep it under 1000 characters.';
     return;
   }
-  const provider = providerEl.value;
-  const apiKey = apiKeyEl.value.trim();
-  const temperature = parseFloat(temperatureEl.value);
-  const maxTokens = parseInt(maxTokensEl.value, 10);
+  const provider = providerEl ? providerEl.value : getSetting('provider', 'groq');
+  const apiKey = (apiKeyEl ? apiKeyEl.value : getSetting('apiKey', '')).trim();
+  const temperature = parseFloat(temperatureEl ? temperatureEl.value : getSetting('temperature', '0.7'));
+  const maxTokens = parseInt(maxTokensEl ? maxTokensEl.value : getSetting('maxTokens', '512'), 10);
 
   if (!apiKey) {
-    queryStatusEl.textContent = 'Please enter a valid API key.';
+    if (queryStatusEl) queryStatusEl.textContent = 'Please enter a valid API key.';
     return;
   }
 
@@ -138,15 +175,15 @@ async function sendQuery() {
     });
     const data = await resp.json();
     if (data.error) {
-      queryStatusEl.textContent = data.error;
+      if (queryStatusEl) queryStatusEl.textContent = data.error;
       addMessage('assistant', `Error: ${data.error}`);
       return;
     }
   const answer = data.answer || '(no answer)';
   addMessage('assistant', answer);
-    queryStatusEl.textContent = `Latency: ${data.latency_sec ? data.latency_sec.toFixed(2) : '?'}s`;
+    if (queryStatusEl) queryStatusEl.textContent = `Latency: ${data.latency_sec ? data.latency_sec.toFixed(2) : '?'}s`;
   } catch (e) {
-    queryStatusEl.textContent = `Query error: ${e}`;
+    if (queryStatusEl) queryStatusEl.textContent = `Query error: ${e}`;
     addMessage('assistant', `Error: ${e}`);
   }
 }
@@ -154,27 +191,29 @@ async function sendQuery() {
 async function resetAll() {
   try {
     await fetch(`${API_BASE}/reset`, { method: 'POST' });
-    messagesEl.innerHTML = '';
-    uploadStatusEl.textContent = 'State reset. You can upload and embed again.';
-    urlStatusEl.textContent = '';
-    queryStatusEl.textContent = '';
-    fileInputEl.value = '';
-    urlsEl.value = '';
+    if (messagesEl) messagesEl.innerHTML = '';
+    if (uploadStatusEl) uploadStatusEl.textContent = 'State reset. You can upload and embed again.';
+    if (urlStatusEl) urlStatusEl.textContent = '';
+    if (queryStatusEl) queryStatusEl.textContent = '';
+    if (fileInputEl) fileInputEl.value = '';
+    if (urlsEl) urlsEl.value = '';
   } catch (e) {
-    uploadStatusEl.textContent = `Reset error: ${e}`;
+    if (uploadStatusEl) uploadStatusEl.textContent = `Reset error: ${e}`;
   }
 }
 
-// Bind
-uploadBtn.addEventListener('click', uploadFiles);
-embedBtn.addEventListener('click', createEmbeddings);
-urlsBtn.addEventListener('click', ingestUrls);
-sendBtn.addEventListener('click', sendQuery);
-resetBtn.addEventListener('click', resetAll);
+// Bind only when elements exist on the page
+if (uploadBtn) uploadBtn.addEventListener('click', uploadFiles);
+if (embedBtn) embedBtn.addEventListener('click', createEmbeddings);
+if (urlsBtn) urlsBtn.addEventListener('click', ingestUrls);
+if (sendBtn) sendBtn.addEventListener('click', sendQuery);
+if (resetBtn) resetBtn.addEventListener('click', resetAll);
 
-promptEl.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendQuery();
-  }
-});
+if (promptEl) {
+  promptEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendQuery();
+    }
+  });
+}

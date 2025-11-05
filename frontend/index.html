@@ -9,61 +9,41 @@
 <body>
   <header>
     <h1>✨ RAG Document Q&A — Llama3 & OpenAI ✨</h1>
+    <nav class="topnav">
+      <a href="index.html">Home</a>
+      <a href="chat.html">Chat</a>
+      <a href="upload.html">Upload</a>
+      <a href="web.html">Web Content</a>
+      <a href="settings.html">Settings</a>
+    </nav>
   </header>
 
   <main>
     <section class="panel">
-      <h2>🔧 Model Settings</h2>
-      <div class="row">
-        <label for="provider">LLM Provider</label>
-        <select id="provider">
-          <option value="groq">Groq (LLaMA3)</option>
-          <option value="openai">OpenAI (GPT-4o-mini)</option>
-        </select>
+      <h2>Welcome</h2>
+      <p>Break your workflow into focused pages. Use the navigation to manage settings, upload documents, add web content, and chat with your RAG assistant.</p>
+      <div class="cards">
+        <div class="card">
+          <h3>🔧 Model Settings</h3>
+          <p>Choose provider, set API key, temperature, and max tokens.</p>
+          <a class="button" href="settings.html">Open Settings</a>
+        </div>
+        <div class="card">
+          <h3>📄 Upload Documents</h3>
+          <p>Upload your PDFs, TXT, or DOCX files and build embeddings.</p>
+          <a class="button" href="upload.html">Go to Upload</a>
+        </div>
+        <div class="card">
+          <h3>🌐 Add Web Content</h3>
+          <p>Fetch content from URLs and include it in your knowledge base.</p>
+          <a class="button" href="web.html">Add URLs</a>
+        </div>
+        <div class="card">
+          <h3>💬 Chat</h3>
+          <p>Ask questions across your uploaded and web-ingested content.</p>
+          <a class="button" href="chat.html">Start Chatting</a>
+        </div>
       </div>
-      <div class="row">
-        <label for="apiKey">API Key</label>
-        <input id="apiKey" type="password" placeholder="Enter your API key" />
-      </div>
-      <div class="row">
-        <label for="temperature">Temperature <span id="temperatureVal">0.7</span></label>
-        <input id="temperature" type="range" min="0" max="1" step="0.1" value="0.7" />
-      </div>
-      <div class="row">
-        <label for="maxTokens">Max Tokens <span id="maxTokensVal">512</span></label>
-        <input id="maxTokens" type="range" min="100" max="2048" step="50" value="512" />
-      </div>
-    </section>
-
-    <section class="panel">
-      <h2>📄 Upload Documents</h2>
-      <p>Allowed types: PDF, TXT, DOCX</p>
-      <input id="fileInput" type="file" multiple accept=".pdf,.txt,.docx" />
-      <div class="actions">
-        <button id="uploadBtn">Upload</button>
-        <button id="embedBtn">Create Embeddings ⛓️‍💥</button>
-        <button id="resetBtn" class="danger">🆕 New Chat</button>
-      </div>
-      <div id="uploadStatus" class="status"></div>
-    </section>
-
-    <section class="panel">
-      <h2>🌐 Add Web Content</h2>
-      <textarea id="urls" rows="4" placeholder="Paste one or more URLs (each on a new line)"></textarea>
-      <div class="actions">
-        <button id="urlsBtn">Fetch & Embed URLs</button>
-      </div>
-      <div id="urlStatus" class="status"></div>
-    </section>
-
-    <section class="panel chat">
-      <h2>💬 Chat</h2>
-      <div id="messages" class="messages"></div>
-      <div class="chat-input">
-        <input id="prompt" type="text" placeholder="Ask a question about your documents" maxlength="1000" />
-        <button id="sendBtn">Send</button>
-      </div>
-      <div id="queryStatus" class="status"></div>
     </section>
   </main>
 
