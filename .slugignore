@@ -1,0 +1,17 @@
+# Exclude local/dev artifacts from the Heroku slug
+rag_venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+.env
+uploaded_documents/
+.DS_Store
+.vscode/
+.idea/
+.git/
+.gitignore
+README.md
+LICENSE
+**/*.ipynb

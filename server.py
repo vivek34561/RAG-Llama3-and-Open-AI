@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import create_retrieval_chain
@@ -103,8 +103,12 @@ def load_documents_from_uploads():
 
 
 def ensure_embeddings():
+    """Ensure embeddings client is initialized (uses OpenAI Embeddings to keep slug small)."""
     if STATE.embeddings is None:
-        STATE.embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+        api_key = os.getenv("OPENAI_API_KEY", "").strip()
+        if not api_key:
+            raise RuntimeError("OPENAI_API_KEY is not set on the server. Configure it as an environment variable.")
+        STATE.embeddings = OpenAIEmbeddings(openai_api_key=api_key, model="text-embedding-3-small")
 
 
 def create_vector_embedding():

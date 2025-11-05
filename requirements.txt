@@ -8,7 +8,6 @@ langchain
 langchain-community
 langchain-openai
 langchain-groq
-sentence-transformers
 faiss-cpu
 pypdf
 docx2txt
