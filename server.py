@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import FAISS
+from typing import Any
 from langchain_openai import OpenAIEmbeddings
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
@@ -38,7 +38,7 @@ app.add_middleware(
 class AppState:
     def __init__(self):
         self.embeddings = None
-        self.vectors: Optional[FAISS] = None
+        self.vectors: Optional[Any] = None
         self.final_documents = []
         self.last_fingerprint: Optional[str] = None
 
@@ -132,6 +132,11 @@ def create_vector_embedding():
 
     try:
         ensure_embeddings()
+        # Lazy import FAISS to avoid startup crashes if the binary is unavailable
+        try:
+            from langchain_community.vectorstores import FAISS  # type: ignore
+        except Exception as ie:
+            return {"status": "error", "message": f"FAISS import failed: {ie}. Ensure faiss-cpu is installed and compatible with Heroku stack."}
         vectors = FAISS.from_documents(final_documents, STATE.embeddings)
         STATE.vectors = vectors
         STATE.final_documents = final_documents
@@ -164,6 +169,11 @@ def add_url_documents(urls: List[str]):
             failed_urls.append(url)
 
     if all_url_docs:
+        # Lazy import FAISS here as well
+        try:
+            from langchain_community.vectorstores import FAISS  # type: ignore
+        except Exception as ie:
+            return {"embedded": 0, "failed": urls, "message": f"FAISS import failed: {ie}"}
         if STATE.vectors is None:
             STATE.vectors = FAISS.from_documents(all_url_docs, STATE.embeddings)
         else:
@@ -273,3 +283,13 @@ async def reset_state():
     STATE.final_documents = []
     STATE.last_fingerprint = None
     return {"status": "ok"}
+
+
+@app.get("/")
+async def root():
+    return {"status": "ok", "service": "RAG Llama3/OpenAI API", "version": "1.0.0"}
+
+
+@app.get("/health")
+async def health():
+    return {"ok": True}
