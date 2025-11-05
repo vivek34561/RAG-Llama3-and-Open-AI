@@ -71,6 +71,43 @@ streamlit run app.py
 
 ---
 
+## 🌐 Optional: Run the REST API + HTML Frontend
+
+This project also includes a FastAPI backend (`server.py`) and a static HTML/CSS/JS frontend (`frontend/`) that provides the same RAG functionality outside Streamlit.
+
+### 1) Start the API server
+
+```bash
+uvicorn server:app --host 127.0.0.1 --port 8000 --reload
+```
+
+### 2) Open the frontend
+
+Open `frontend/index.html` in your browser. Configure:
+
+- LLM Provider (Groq or OpenAI)
+- Your API key
+- Temperature and Max Tokens
+
+Then:
+
+- Upload files (PDF/TXT/DOCX) and click "Create Embeddings"
+- Or paste URLs and click "Fetch & Embed URLs"
+- Ask questions in the chat input
+- Use "New Chat" to clear server state and uploads
+
+Endpoints used by the frontend (served by `server.py`):
+
+- `POST /upload` — Upload files (multipart)
+- `POST /embed` — Build FAISS embeddings from uploaded files
+- `POST /urls` — Fetch URLs and embed content
+- `POST /query` — Query the RAG pipeline with provider+key
+- `POST /reset` — Clear uploaded files and in-memory state
+
+Dependencies for this mode are already listed in `requirements.txt` (FastAPI, Uvicorn, python-multipart, etc.).
+
+---
+
 ## 🧠 Model Options
 
 Choose from the sidebar:
