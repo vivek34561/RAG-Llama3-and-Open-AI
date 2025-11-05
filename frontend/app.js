@@ -1,4 +1,7 @@
-const API_BASE = "http://127.0.0.1:8000";
+// Auto-pick API base: use local server during dev, Edge rewrite (/api) on Vercel
+const API_BASE = (typeof window !== 'undefined' && /\.vercel\.app$/.test(window.location.hostname))
+  ? "/api"
+  : "http://127.0.0.1:8000";
 
 // Elements
 const providerEl = document.getElementById('provider');

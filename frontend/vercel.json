@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "https://<your-heroku-app>.herokuapp.com/$1"
+    }
+  ]
+}
