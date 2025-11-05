@@ -29,7 +29,7 @@ maxTokensEl.addEventListener('input', () => {
   maxTokensValEl.textContent = maxTokensEl.value;
 });
 
-function addMessage(role, content, contexts) {
+function addMessage(role, content) {
   const wrap = document.createElement('div');
   wrap.className = `message ${role}`;
   const roleEl = document.createElement('div');
@@ -40,20 +40,6 @@ function addMessage(role, content, contexts) {
   contentEl.textContent = content;
   wrap.appendChild(roleEl);
   wrap.appendChild(contentEl);
-
-  if (contexts && contexts.length) {
-    const details = document.createElement('div');
-    details.className = 'details';
-    const title = document.createElement('div');
-    title.textContent = `Context (${contexts.length})`;
-    details.appendChild(title);
-    contexts.forEach((c, i) => {
-      const p = document.createElement('p');
-      p.textContent = c;
-      details.appendChild(p);
-    });
-    wrap.appendChild(details);
-  }
 
   messagesEl.appendChild(wrap);
   messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -156,8 +142,8 @@ async function sendQuery() {
       addMessage('assistant', `Error: ${data.error}`);
       return;
     }
-    const answer = data.answer || '(no answer)';
-    addMessage('assistant', answer, data.contexts || []);
+  const answer = data.answer || '(no answer)';
+  addMessage('assistant', answer);
     queryStatusEl.textContent = `Latency: ${data.latency_sec ? data.latency_sec.toFixed(2) : '?'}s`;
   } catch (e) {
     queryStatusEl.textContent = `Query error: ${e}`;
