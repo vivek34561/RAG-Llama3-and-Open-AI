@@ -1,7 +1,5 @@
-// Auto-pick API base: use local server during dev, Edge rewrite (/api) on Vercel
-const API_BASE = (typeof window !== 'undefined' && /\.vercel\.app$/.test(window.location.hostname))
-  ? "/api"
-  : "http://127.0.0.1:8000";
+// Fixed API base pointing to your deployed Heroku backend
+const API_BASE = "https://docsense-60db96460d1e.herokuapp.com";
 
 // Elements
 const providerEl = document.getElementById('provider');

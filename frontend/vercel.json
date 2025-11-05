@@ -3,7 +3,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "https://<your-heroku-app>.herokuapp.com/$1"
+      "dest": "https://docsense-60db96460d1e.herokuapp.com/$1"
     }
   ]
 }
