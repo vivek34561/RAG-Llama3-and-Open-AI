@@ -24,7 +24,9 @@ This is a **Retrieval-Augmented Generation (RAG)** application built with **Stre
 - [Streamlit](https://streamlit.io/)
 - [LangChain](https://www.langchain.com/)
 - [FAISS](https://github.com/facebookresearch/faiss)
-- [HuggingFace Embeddings](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
+- Embeddings:
+	- Streamlit app: [HuggingFace](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
+	- FastAPI backend: Gemini (Google Generative AI) model `text-embedding-004`
 - [Groq LLaMA3](https://groq.com/)
 - [OpenAI GPT-4](https://openai.com/)
 - [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/)
@@ -59,6 +61,7 @@ Create a `.env` file in the root directory and add your API keys:
 ```
 OPENAI_API_KEY=your-openai-api-key  
 GROQ_API_KEY=your-groq-api-key  
+GOOGLE_API_KEY=your-gemini-api-key  # used for server-side embeddings
 ```
 
 ---

@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import Any
-from langchain_openai import OpenAIEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import create_retrieval_chain
@@ -103,12 +103,18 @@ def load_documents_from_uploads():
 
 
 def ensure_embeddings():
-    """Ensure embeddings client is initialized (uses OpenAI Embeddings to keep slug small)."""
+    """Ensure embeddings client is initialized (now using Gemini embeddings)."""
     if STATE.embeddings is None:
-        api_key = os.getenv("OPENAI_API_KEY", "").strip()
+        api_key = os.getenv("GOOGLE_API_KEY", "").strip()
         if not api_key:
-            raise RuntimeError("OPENAI_API_KEY is not set on the server. Configure it as an environment variable.")
-        STATE.embeddings = OpenAIEmbeddings(openai_api_key=api_key, model="text-embedding-3-small")
+            raise RuntimeError(
+                "GOOGLE_API_KEY is not set on the server. Configure it as an environment variable for Gemini embeddings."
+            )
+        # Recommended Gemini embedding model
+        STATE.embeddings = GoogleGenerativeAIEmbeddings(
+            model="models/text-embedding-004",
+            google_api_key=api_key,
+        )
 
 
 def create_vector_embedding():
