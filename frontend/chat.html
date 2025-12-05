@@ -3,36 +3,45 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Document Chat — Powered by Llama 3 & OpenAI | Chat</title>
+  <title>Chat — RAG Llama3 / OpenAI</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0b1220">
 </head>
-<body>
-  <header>
-    <h1>Document Chat — Powered by Llama 3 & OpenAI</h1>
-    <nav class="topnav">
-      <a href="index.html">Home</a>
-      <a href="chat.html">Chat</a>
-      <a href="upload.html">Upload</a>
-      <a href="web.html">Web Content</a>
-      <a href="settings.html">Settings</a>
+<body class="chatgpt-layout">
+  <header class="chatgpt-header">
+    <div class="brand">RAG Chat</div>
+    <nav class="right-actions">
+      <a class="ghost" href="settings.html" title="Settings">Settings</a>
     </nav>
   </header>
 
-  <main>
-    <section class="panel chat">
-      <h2>💬 Chat</h2>
-      <div id="messages" class="messages"></div>
-      <div class="chat-input">
-        <input id="prompt" type="text" placeholder="Ask a question about your documents" maxlength="1000" />
-        <button id="sendBtn">Send</button>
+  <main class="chatgpt-main">
+    <div id="messages" class="messages bubbles"></div>
+
+    <div class="composer-wrap">
+      <div class="composer">
+        <button id="attachBtn" class="icon-btn" title="Upload files">📎</button>
+        <input id="prompt" type="text" placeholder="Message RAG Chat..." maxlength="1000" />
+        <button id="urlBtn" class="icon-btn" title="Add URL">🔗</button>
+        <button id="sendBtn" class="send-btn" title="Send">➤</button>
+        <input id="hiddenFile" type="file" accept=".pdf,.txt,.docx" multiple hidden />
       </div>
-      <div id="queryStatus" class="status"></div>
-      <div class="details"><small>Tip: Configure your provider and API key in Settings.</small></div>
-    </section>
+      <div id="composerStatus" class="composer-status"></div>
+
+      <div id="urlPopover" class="popover hidden">
+        <input id="urlInput" type="text" placeholder="Paste URL and press Enter" />
+        <button id="addUrlBtn">Add</button>
+      </div>
+    </div>
+    <div id="queryStatus" class="status"></div>
   </main>
 
-  <footer>
-    <small>Built with ❤️ using FastAPI + LangChain + FAISS</small>
+  <footer class="chatgpt-footer">
+    <small>Tip: Configure provider + API key in Settings.</small>
   </footer>
 
   <script src="app.js"></script>

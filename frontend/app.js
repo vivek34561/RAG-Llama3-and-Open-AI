@@ -1,5 +1,9 @@
-// Fixed API base pointing to your deployed Heroku backend
-const API_BASE = "https://docsense-60db96460d1e.herokuapp.com";
+// API base: can be overridden via localStorage 'apiBase'.
+// Defaults to deployed backend; switches to localhost when served locally.
+let API_BASE = localStorage.getItem('apiBase') || "https://docsense-60db96460d1e.herokuapp.com";
+if (!localStorage.getItem('apiBase') && /localhost|127\.0\.0\.1/.test(location.hostname)) {
+  API_BASE = "http://127.0.0.1:8000";
+}
 
 // Elements (may be null depending on the page)
 const providerEl = document.getElementById('provider');
@@ -20,6 +24,16 @@ const messagesEl = document.getElementById('messages');
 const promptEl = document.getElementById('prompt');
 const sendBtn = document.getElementById('sendBtn');
 const queryStatusEl = document.getElementById('queryStatus');
+
+// New ChatGPT-like composer elements (may be null on other pages)
+const attachBtn = document.getElementById('attachBtn');
+const hiddenFile = document.getElementById('hiddenFile');
+const urlBtn = document.getElementById('urlBtn');
+const urlPopover = document.getElementById('urlPopover');
+const urlInput = document.getElementById('urlInput');
+const addUrlBtn = document.getElementById('addUrlBtn');
+const composerStatusEl = document.getElementById('composerStatus');
+const isChatGptLayout = document.body && document.body.classList && document.body.classList.contains('chatgpt-layout');
 
 // Helpers for persisted settings
 function getSetting(key, fallback) {
@@ -65,17 +79,30 @@ if (maxTokensEl) {
 function addMessage(role, content) {
   const wrap = document.createElement('div');
   wrap.className = `message ${role}`;
-  const roleEl = document.createElement('div');
-  roleEl.className = 'role';
-  roleEl.textContent = role === 'user' ? 'You' : 'Assistant';
   const contentEl = document.createElement('div');
   contentEl.className = 'content';
   contentEl.textContent = content;
-  wrap.appendChild(roleEl);
+  // In ChatGPT layout, omit the role label; keep it on legacy pages
+  if (!isChatGptLayout) {
+    const roleEl = document.createElement('div');
+    roleEl.className = 'role';
+    roleEl.textContent = role === 'user' ? 'You' : 'Assistant';
+    wrap.appendChild(roleEl);
+  }
   wrap.appendChild(contentEl);
   if (messagesEl) {
     messagesEl.appendChild(wrap);
     messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+}
+
+function composerToast(msg, timeout = 2500) {
+  if (!composerStatusEl) return;
+  composerStatusEl.textContent = msg;
+  if (timeout) {
+    setTimeout(() => {
+      if (composerStatusEl.textContent === msg) composerStatusEl.textContent = '';
+    }, timeout);
   }
 }
 
@@ -179,8 +206,8 @@ async function sendQuery() {
       addMessage('assistant', `Error: ${data.error}`);
       return;
     }
-  const answer = data.answer || '(no answer)';
-  addMessage('assistant', answer);
+    const answer = data.answer || '(no answer)';
+    addMessage('assistant', answer);
     if (queryStatusEl) queryStatusEl.textContent = `Latency: ${data.latency_sec ? data.latency_sec.toFixed(2) : '?'}s`;
   } catch (e) {
     if (queryStatusEl) queryStatusEl.textContent = `Query error: ${e}`;
@@ -216,4 +243,82 @@ if (promptEl) {
       sendQuery();
     }
   });
+}
+
+// Quick upload from the chat composer: upload then embed
+async function quickUploadAndEmbed(files) {
+  try {
+    if (!files || files.length === 0) return composerToast('No files selected.');
+    const form = new FormData();
+    for (const f of files) form.append('files', f);
+    composerToast('Uploading files…');
+    const up = await fetch(`${API_BASE}/upload`, { method: 'POST', body: form });
+    const upData = await up.json();
+    if (!up.ok) return composerToast('Upload failed.');
+    composerToast(`Uploaded: ${Array.isArray(upData.saved) ? upData.saved.join(', ') : 'files'}`);
+    composerToast('Creating embeddings…');
+    const emb = await fetch(`${API_BASE}/embed`, { method: 'POST' });
+    const embData = await emb.json();
+    if (embData.status === 'ok') {
+      composerToast(`Embeddings ready. Chunks: ${embData.chunks}`);
+    } else {
+      composerToast(embData.message || 'Embedding failed.');
+    }
+  } catch (e) {
+    composerToast(`Upload/Embed error: ${e}`);
+  }
+}
+
+// Quick add URL from the chat composer
+async function quickAddUrl(url) {
+  const u = (url || '').trim();
+  if (!u) return composerToast('URL is empty.');
+  try {
+    composerToast('Adding URL…');
+    const resp = await fetch(`${API_BASE}/urls`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ urls: [u] })
+    });
+    const data = await resp.json();
+    if (resp.ok) {
+      const failed = (data.failed || []).length ? ` Failed: ${data.failed.join(', ')}` : '';
+      composerToast(`Embedded: ${data.embedded}.${failed}`);
+    } else {
+      composerToast('URL ingestion failed.');
+    }
+  } catch (e) {
+    composerToast(`URL error: ${e}`);
+  }
+}
+
+// Bind composer controls when present
+if (attachBtn && hiddenFile) {
+  attachBtn.addEventListener('click', () => hiddenFile.click());
+  hiddenFile.addEventListener('change', () => {
+    quickUploadAndEmbed(hiddenFile.files);
+    hiddenFile.value = '';
+  });
+}
+
+if (urlBtn && urlPopover) {
+  const toggle = () => urlPopover.classList.toggle('hidden');
+  urlBtn.addEventListener('click', toggle);
+  if (addUrlBtn && urlInput) {
+    addUrlBtn.addEventListener('click', () => {
+      quickAddUrl(urlInput.value);
+      urlInput.value = '';
+      urlPopover.classList.add('hidden');
+    });
+    urlInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        quickAddUrl(urlInput.value);
+        urlInput.value = '';
+        urlPopover.classList.add('hidden');
+      } else if (e.key === 'Escape') {
+        urlPopover.classList.add('hidden');
+      }
+    });
+  }
 }
