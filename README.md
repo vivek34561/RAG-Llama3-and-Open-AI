@@ -1,6 +1,54 @@
-# 🔍 RAG-Based Document Q&A App (Streamlit + LLaMA3/OpenAI)
+# RAG Llama3 and OpenAI — Streamlit + FastAPI + Web Chat
 
-This is a **Retrieval-Augmented Generation (RAG)** application built with **Streamlit** that lets you ask questions based on **uploaded documents** or **webpage content** using **LLaMA3 (via Groq)** or **OpenAI's GPT-4**.
+This repo includes both a Streamlit app and a FastAPI API with a simple ChatGPT‑style web chat UI (bubbles + sticky composer). You can upload files and add URLs directly from the chat input bar.
+
+---
+## Web Chat (ChatGPT‑style) — Quick Start (Windows)
+
+1) Install and run the API
+
+```powershell
+python -m venv rag_venv
+& .\rag_venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+# Embeddings (API) use Gemini. Set once per shell:
+$env:GOOGLE_API_KEY = "<your_gemini_api_key>"
+
+uvicorn server:app --reload --host 127.0.0.1 --port 8000
+```
+
+2) Serve the frontend
+
+```powershell
+cd frontend
+python -m http.server 5500
+```
+
+Open http://127.0.0.1:5500/chat.html. If needed, point the chat to your local API (one‑time in the browser console):
+
+```js
+localStorage.setItem('apiBase','http://127.0.0.1:8000')
+```
+
+In Settings (top right), choose provider and paste your API key. In Chat:
+- Paperclip to upload files (auto‑embeds)
+- Link button to add a URL (embeds immediately)
+- Type your question and press Enter
+
+---
+## API Endpoints
+
+- `POST /upload` — upload .pdf/.txt/.docx
+- `POST /embed` — build FAISS index from uploaded docs
+- `POST /urls` — fetch page text and embed
+- `POST /query` — ask a question (body: provider, api_key, prompt, temperature, max_tokens)
+- `POST /reset` — clear uploaded files and in‑memory index
+
+Troubleshooting:
+- “No embeddings available”: upload+embed or add a URL first; restart/reset clears the in‑memory FAISS index.
+- “GOOGLE_API_KEY is not set”: set the env var before calling `/embed`.
+- FAISS import issues: ensure `faiss-cpu` is installed (it’s in `requirements.txt`).
 
 ---
 ## Application link : https://rag-llama3-and-open-ai-lefydqj5baw4bevea7aq4q.streamlit.app/
